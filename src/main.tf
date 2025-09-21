@@ -7,6 +7,10 @@ terraform {
     region         = "ap-southeast-1"
     dynamodb_table = "terraform-state-locking"
     encrypt        = true
+
+    lifecycle {
+    prevent_destroy = true
+    }
   }
 
     required_version = ">=0.13.0"
