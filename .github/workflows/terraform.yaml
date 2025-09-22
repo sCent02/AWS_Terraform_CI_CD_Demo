@@ -13,6 +13,7 @@ jobs:
     env:
       AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
       AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+      SKIP_BACKEND: true
     defaults:
       run:
         working-directory: ./backend
@@ -45,10 +46,10 @@ jobs:
           fi
 
       - name: Initialize and Apply Backend if missing
-        if: steps.check-s3.outputs.bucket_exists == 'false' || steps.check-ddb.outputs.table_exists == 'false'
+        if: env.SKIP_BACKEND != 'true' && (steps.check-s3.outputs.bucket_exists == 'false' || steps.check-ddb.outputs.table_exists == 'false')
         run: |
-          terraform init -backend=false
-          terraform apply -auto-approve
+         terraform init -backend=false
+         terraform apply -auto-approve
 
 
   # Job for infrastructure apply
