@@ -1,7 +1,10 @@
 name: "Terraform"
 
 on:
-  workflow_dispatch:
+  push:
+    branches:
+      - test-ci-cd
+  # workflow_dispatch:   # Manual trigger only
 
 jobs:
   backend-setup:
