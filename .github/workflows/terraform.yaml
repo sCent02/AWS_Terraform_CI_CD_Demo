@@ -24,11 +24,24 @@ jobs:
         with:
           terraform_version: 1.0.1
           terraform_wrapper: false
-      
-      - name: Initialize and Apply Backend
+
+      - name: Check if backend already exists
+        id: check-backend
         run: |
-          terraform init
+          set -e
+          if aws s3api head-bucket --bucket cc-tf-state-backend-ci-cd-vin 2>/dev/null; then
+            echo "Backend bucket already exists."
+            echo "skip_backend=true" >> $GITHUB_ENV
+          else
+            echo "skip_backend=false" >> $GITHUB_ENV
+          fi
+          
+      - name: Initialize and Apply Backend
+        if: env.skip_backend == 'false'
+        run: |
+          terraform init -backend=false
           terraform apply -auto-approve
+
 
   # Job for infrastructure apply
   infra:
