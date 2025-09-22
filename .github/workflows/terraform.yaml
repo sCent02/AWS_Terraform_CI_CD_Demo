@@ -37,8 +37,17 @@ jobs:
             echo "skip_backend=false" >> $GITHUB_ENV
           fi
           
-      - name: Initialize and Apply Backend
-        if: env.skip_backend == 'false'
+      - name: Check if DynamoDB table exists
+        id: ddb-check
+        run: |
+          if aws dynamodb describe-table --table-name terraform-locks 2>/dev/null; then
+            echo "table_exists=true" >> $GITHUB_ENV
+          else
+            echo "table_exists=false" >> $GITHUB_ENV
+          fi
+
+      - name: Initialize and Apply Backend if missing
+        if: env.bucket_exists == 'false' || env.table_exists == 'false'
         run: |
           terraform init -backend=false
           terraform apply -auto-approve
