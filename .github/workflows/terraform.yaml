@@ -29,23 +29,23 @@ jobs:
       - name: Check if backend bucket exists
         id: check-s3
         run: |
-          if aws s3api head-bucket --bucket cc-tf-state-backend-ci-cd-vin 2>/dev/null; then
-            echo "BUCKET_EXISTS=true" >> $GITHUB_ENV
-          else
-            echo "BUCKET_EXISTS=false" >> $GITHUB_ENV
-          fi
+         if aws s3api head-bucket --bucket cc-tf-state-backend-ci-cd-vin 2>/dev/null; then
+          echo "bucket_exists=true" >> $GITHUB_OUTPUT
+         else
+          echo "bucket_exists=false" >> $GITHUB_OUTPUT
+         fi
 
       - name: Check if DynamoDB table exists
         id: check-ddb
         run: |
           if aws dynamodb describe-table --table-name terraform-locks 2>/dev/null; then
-            echo "TABLE_EXISTS=true" >> $GITHUB_ENV
+            echo "table_exists=true" >> $GITHUB_OUTPUT
           else
-            echo "TABLE_EXISTS=false" >> $GITHUB_ENV
+            echo "table_exists=false" >> $GITHUB_OUTPUT
           fi
 
       - name: Initialize and Apply Backend if missing
-        if: env.BUCKET_EXISTS == 'false' || env.TABLE_EXISTS == 'false'
+        if: steps.check-s3.outputs.bucket_exists == 'false' || steps.check-ddb.outputs.table_exists == 'false'
         run: |
           terraform init -backend=false
           terraform apply -auto-approve
