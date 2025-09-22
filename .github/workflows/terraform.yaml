@@ -13,7 +13,6 @@ jobs:
     env:
       AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
       AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-      SKIP_BACKEND: true
     defaults:
       run:
         working-directory: ./backend
@@ -45,11 +44,11 @@ jobs:
             echo "table_exists=false" >> $GITHUB_OUTPUT
           fi
 
-      - name: Initialize and Apply Backend if missing
-        if: env.SKIP_BACKEND != 'true' && (steps.check-s3.outputs.bucket_exists == 'false' || steps.check-ddb.outputs.table_exists == 'false')
-        run: |
-         terraform init -backend=false
-         terraform apply -auto-approve
+      # - name: Initialize and Apply Backend if missing
+        # ifif: steps.check-s3.outputs.bucket_exists == 'false' || steps.check-ddb.outputs.table_exists == 'false'
+      # run: |
+       #  terraform init -backend=false
+       #  terraform apply -auto-approve
 
 
   # Job for infrastructure apply
