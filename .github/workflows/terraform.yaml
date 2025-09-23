@@ -1,7 +1,10 @@
 name: "Terraform"
 
 on:
-  workflow_dispatch:
+  #push:
+  #  branches:
+  #    - test-ci-cd
+  workflow_dispatch:   # Manual trigger only
 
 jobs:
   backend-setup:
@@ -23,22 +26,29 @@ jobs:
           terraform_version: 1.0.1
           terraform_wrapper: false
 
-      - name: Check if backend already exists
-        id: check-backend
+      - name: Check if backend bucket exists
+        id: check-s3
         run: |
-          set -e
-          if aws s3api head-bucket --bucket cc-tf-state-backend-ci-cd-vin 2>/dev/null; then
-            echo "Backend bucket already exists."
-            echo "skip_backend=true" >> $GITHUB_ENV
+         if aws s3api head-bucket --bucket cc-tf-state-backend-ci-cd-vin 2>/dev/null; then
+          echo "bucket_exists=true" >> $GITHUB_OUTPUT
+         else
+          echo "bucket_exists=false" >> $GITHUB_OUTPUT
+         fi
+
+      - name: Check if DynamoDB table exists
+        id: check-ddb
+        run: |
+          if aws dynamodb describe-table --table-name terraform-locks 2>/dev/null; then
+            echo "table_exists=true" >> $GITHUB_OUTPUT
           else
-            echo "skip_backend=false" >> $GITHUB_ENV
+            echo "table_exists=false" >> $GITHUB_OUTPUT
           fi
-          
-      - name: Initialize and Apply Backend
-        if: env.skip_backend == 'false'
-        run: |
-          terraform init -backend=false
-          terraform apply -auto-approve
+
+      # - name: Initialize and Apply Backend if missing
+        # ifif: steps.check-s3.outputs.bucket_exists == 'false' || steps.check-ddb.outputs.table_exists == 'false'
+      # run: |
+       #  terraform init -backend=false
+       #  terraform apply -auto-approve
 
 
   # Job for infrastructure apply

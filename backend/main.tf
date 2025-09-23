@@ -8,6 +8,7 @@ resource "aws_s3_bucket" "terraform_state" {
   
   lifecycle {
     prevent_destroy = true
+    ignore_changes  = [bucket]
   }
 }
 
@@ -39,5 +40,6 @@ resource "aws_dynamodb_table" "terraform_locks" {
 
   lifecycle {
     prevent_destroy = true
+    ignore_changes  = [name]
   }
 }
